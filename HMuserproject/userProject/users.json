@@ -1,0 +1,19 @@
+{
+  "13800001234": {
+    "phone": "13800001234",
+    "created_at": "2026-06-25 17:21:12",
+    "last_login": "2026-06-26 16:53:21",
+    "accessToken": "18430ad36a414cf4b928a080811ab8dd",
+    "renewalToken": "0ddec108fafb4b1fab98f95a40216886"
+  },
+  "120666666673": {
+    "phone": "120666666673",
+    "passwd": "888itcast.CN764%...",
+    "nickname": "测试学员",
+    "avatar": "/static/cat.jpg",
+    "created_at": "2026-06-26 17:10:55",
+    "last_login": "2026-06-26 21:45:41",
+    "accessToken": "e554d2d26c8348f58cd016c2d3883ea2",
+    "renewalToken": "055272241c0c43b79a449cf513b311c8"
+  }
+}

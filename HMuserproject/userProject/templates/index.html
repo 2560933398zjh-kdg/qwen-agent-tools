@@ -1,0 +1,456 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>验证码登录</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, "Segoe UI", "Microsoft YaHei", sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+    }
+    .card {
+      background: #fff;
+      width: 100%;
+      max-width: 400px;
+      border-radius: 16px;
+      padding: 32px 28px;
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.2);
+    }
+    h1 { font-size: 22px; margin-bottom: 8px; color: #333; }
+    .subtitle { font-size: 13px; color: #999; margin-bottom: 28px; }
+    .field { margin-bottom: 18px; }
+    label { display: block; font-size: 13px; color: #666; margin-bottom: 6px; }
+    input {
+      width: 100%;
+      padding: 12px 0;
+      border: none;
+      border-bottom: 1px solid #e0e0e0;
+      font-size: 15px;
+      outline: none;
+      background: transparent;
+    }
+    input:focus { border-bottom-color: #667eea; }
+    .code-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid #e0e0e0;
+    }
+    .code-row input { border-bottom: none; flex: 1; }
+    .link-btn {
+      background: none;
+      border: none;
+      color: #667eea;
+      font-size: 14px;
+      cursor: pointer;
+      white-space: nowrap;
+      padding: 12px 0 12px 12px;
+    }
+    .link-btn:disabled { color: #bbb; cursor: not-allowed; }
+    .btn-login {
+      width: 100%;
+      padding: 13px;
+      margin-top: 24px;
+      border: none;
+      border-radius: 8px;
+      background: linear-gradient(135deg, #667eea, #764ba2);
+      color: #fff;
+      font-size: 16px;
+      cursor: pointer;
+    }
+    .btn-quick {
+      width: 100%;
+      padding: 13px;
+      margin-top: 12px;
+      border: none;
+      border-radius: 8px;
+      background: #f0f0f5;
+      color: #667eea;
+      font-size: 14px;
+      cursor: pointer;
+    }
+    .btn-quick:hover { background: #e8e8f0; }
+    .msg { margin-top: 16px; font-size: 13px; text-align: center; min-height: 18px; }
+    .msg.ok { color: #2e9e5b; }
+    .msg.err { color: #e44; }
+    .warn {
+      margin-top: 40px;
+      font-size: 13px;
+      color: #e44;
+      line-height: 1.6;
+    }
+    .user-box, .me-box {
+      margin-top: 16px;
+      padding: 16px;
+      background: #f7f7fb;
+      border-radius: 8px;
+      font-size: 13px;
+      color: #444;
+      line-height: 1.8;
+      display: none;
+    }
+    .me-box { background: #fff; border: 1px solid #eee; margin-top: 12px; }
+    .user-box img.avatar, .me-box img.avatar {
+      width: 64px;
+      height: 64px;
+      border-radius: 50%;
+      object-fit: cover;
+      margin-bottom: 10px;
+      display: block;
+    }
+    .btn-me {
+      width: 100%;
+      padding: 10px;
+      margin-top: 12px;
+      border: none;
+      border-radius: 8px;
+      background: linear-gradient(135deg, #667eea, #764ba2);
+      color: #fff;
+      font-size: 14px;
+      cursor: pointer;
+    }
+    .btn-logout {
+      width: 100%;
+      padding: 10px;
+      margin-top: 12px;
+      border: none;
+      border-radius: 8px;
+      background: #f0f0f5;
+      color: #666;
+      cursor: pointer;
+    }
+    .overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.45);
+      align-items: flex-end;
+      justify-content: center;
+      z-index: 100;
+    }
+    .overlay.show { display: flex; }
+    .sheet {
+      background: #fff;
+      width: 100%;
+      max-width: 400px;
+      border-radius: 16px 16px 0 0;
+      padding: 24px 30px 32px;
+    }
+    .sheet-title {
+      font-size: 16px;
+      color: #333;
+      margin-bottom: 32px;
+      text-align: center;
+    }
+    .graphic-row {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+    .graphic-row input {
+      flex: 1;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      padding: 10px 12px;
+    }
+    .graphic-row img {
+      width: 108px;
+      height: 42px;
+      border-radius: 6px;
+      cursor: pointer;
+      border: 1px solid #eee;
+      object-fit: contain;
+      background: #f5f5f5;
+    }
+    .btn-submit {
+      width: 100%;
+      padding: 12px;
+      border: none;
+      border-radius: 8px;
+      background: #667eea;
+      color: #fff;
+      font-size: 15px;
+      cursor: pointer;
+    }
+    .btn-submit:disabled { opacity: .5; cursor: not-allowed; }
+    .btn-close {
+      display: block;
+      width: 100%;
+      margin-top: 12px;
+      padding: 10px;
+      border: none;
+      background: none;
+      color: #999;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h1>验证码登录</h1>
+    <p class="subtitle">图形验证码 → 短信验证码 → 登录</p>
+
+    <div id="loginForm">
+      <div class="field">
+        <label>手机号</label>
+        <input id="phone" type="tel" maxlength="12" placeholder="请输入手机号" value="13800001234" />
+      </div>
+      <div class="field">
+        <label>短信验证码</label>
+        <div class="code-row">
+          <input id="smsCode" type="text" maxlength="6" placeholder="请输入验证码" />
+          <button class="link-btn" id="btnSend" onclick="openGraphicSheet()">获取验证码</button>
+        </div>
+      </div>
+      <button class="btn-login" onclick="login()">登 录</button>
+      <button class="btn-quick" onclick="loginByPasswd()">帐号密码快速登录 - 测试用</button>
+      <p class="warn">仅用于 IT 培训教学使用，为保障您的个人信息安全请勿向平台录入任何个人敏感信息（如手机号、身份证号等）！</p>
+    </div>
+
+    <div class="msg" id="msg"></div>
+    <div class="user-box" id="userBox"></div>
+    <div class="me-box" id="meBox"></div>
+    <button class="btn-me" id="btnMe" style="display:none" onclick="fetchMyInfo()">获取我的信息</button>
+    <button class="btn-logout" id="btnLogout" style="display:none" onclick="logout()">退出登录</button>
+  </div>
+
+  <div class="overlay" id="overlay" onclick="closeIfBackdrop(event)">
+    <div class="sheet" onclick="event.stopPropagation()">
+      <div class="sheet-title">图形验证码</div>
+      <div class="graphic-row">
+        <input id="graphicCode" type="text" maxlength="4" placeholder="图形验证码"
+               oninput="updateSubmitBtn()" onkeydown="if(event.key==='Enter')submitGraphic()" />
+        <img id="graphicImg" src="" alt="图形验证码" title="点击刷新" onclick="refreshGraphic()" />
+      </div>
+      <button class="btn-submit" id="btnGraphicSubmit" disabled onclick="submitGraphic()">提交</button>
+      <button class="btn-close" onclick="closeGraphicSheet()">取消</button>
+    </div>
+  </div>
+
+  <script>
+    const BIZ_TYPE = 1;
+    const DEMO_PHONE = "120666666673";
+    const DEMO_PASSWD = "888itcast.CN764%...";
+    const $ = (id) => document.getElementById(id);
+    let timestamp = Date.now();
+    let count = 0;
+    let countTimer = null;
+
+    function setMsg(text, ok) {
+      const m = $("msg");
+      m.textContent = text;
+      m.className = "msg " + (ok ? "ok" : "err");
+    }
+
+    function getLoginInfo() {
+      try {
+        return JSON.parse(localStorage.getItem("LOGIN_INFO") || "null");
+      } catch (_) {
+        return null;
+      }
+    }
+
+    function authHeaders() {
+      const info = getLoginInfo();
+      return info?.accessToken ? { Authorization: info.accessToken } : {};
+    }
+
+    async function apiPost(url, body) {
+      const res = await fetch(url, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", ...authHeaders() },
+        body: JSON.stringify(body || {}),
+      });
+      const data = await res.json();
+      if (data.code !== 200) {
+        const err = new Error(data.msg || "请求失败");
+        err.data = data;
+        throw err;
+      }
+      return data;
+    }
+
+    async function apiGet(url) {
+      const res = await fetch(url, { headers: authHeaders() });
+      const data = await res.json();
+      if (data.code !== 200) {
+        const err = new Error(data.msg || "请求失败");
+        err.data = data;
+        throw err;
+      }
+      return data;
+    }
+
+    function graphicUrl() {
+      const phone = $("phone").value.trim();
+      return `/code/graphic?phone=${encodeURIComponent(phone)}&bizType=${BIZ_TYPE}&timestamp=${timestamp}`;
+    }
+
+    async function refreshGraphic() {
+      timestamp = Date.now();
+      const res = await fetch(graphicUrl());
+      const blob = await res.blob();
+      $("graphicImg").src = URL.createObjectURL(blob);
+    }
+
+    function openGraphicSheet() {
+      const phone = $("phone").value.trim();
+      if (!phone) {
+        setMsg("请先输入手机号", false);
+        return;
+      }
+      $("graphicCode").value = "";
+      updateSubmitBtn();
+      refreshGraphic();
+      $("overlay").classList.add("show");
+    }
+
+    function closeGraphicSheet() {
+      $("overlay").classList.remove("show");
+    }
+
+    function closeIfBackdrop(e) {
+      if (e.target === $("overlay")) closeGraphicSheet();
+    }
+
+    function updateSubmitBtn() {
+      $("btnGraphicSubmit").disabled = $("graphicCode").value.trim().length === 0;
+    }
+
+    async function submitGraphic() {
+      const phone = $("phone").value.trim();
+      const verifyCode = $("graphicCode").value.trim();
+      try {
+        await apiPost("/code/graphic/check", { phone, bizType: BIZ_TYPE, verifyCode });
+        const res = await apiPost("/code/sms/send", { phone, bizType: BIZ_TYPE });
+        closeGraphicSheet();
+        $("graphicCode").value = "";
+        timestamp = Date.now();
+        startCountdown();
+        setMsg(res.msg, true);
+      } catch (err) {
+        refreshGraphic();
+        $("graphicCode").value = "";
+        updateSubmitBtn();
+        setMsg(err.message, false);
+      }
+    }
+
+    function startCountdown() {
+      count = 120;
+      const btn = $("btnSend");
+      btn.disabled = true;
+      clearInterval(countTimer);
+      countTimer = setInterval(() => {
+        btn.textContent = count + "秒后重发";
+        count--;
+        if (count < 0) {
+          clearInterval(countTimer);
+          btn.disabled = false;
+          btn.textContent = "获取验证码";
+        }
+      }, 1000);
+    }
+
+    async function login() {
+      const phone = $("phone").value.trim();
+      const verifyCode = $("smsCode").value.trim();
+      if (!phone || !verifyCode) {
+        setMsg("请填写手机号和短信验证码", false);
+        return;
+      }
+      try {
+        const res = await apiPost("/user/login/verifyCode", { phone, verifyCode });
+        localStorage.setItem("LOGIN_INFO", JSON.stringify(res.result));
+        setMsg(res.msg, true);
+        showUser(res.result, phone);
+      } catch (err) {
+        setMsg(err.message, false);
+      }
+    }
+
+    async function loginByPasswd() {
+      try {
+        const res = await apiPost("/user/login/passwd", {
+          phone: DEMO_PHONE,
+          passwd: DEMO_PASSWD,
+        });
+        localStorage.setItem("LOGIN_INFO", JSON.stringify(res.result));
+        setMsg(res.msg, true);
+        showUser(res.result, DEMO_PHONE);
+      } catch (err) {
+        setMsg(err.message, false);
+      }
+    }
+
+    function showUser(info, phone) {
+      $("loginForm").style.display = "none";
+      const box = $("userBox");
+      box.style.display = "block";
+      const avatarHtml = info.avatar
+        ? `<img class="avatar" src="${info.avatar}" alt="头像" />`
+        : "";
+      box.innerHTML =
+        avatarHtml +
+        "<b>登录成功</b><br>" +
+        "手机号：" + phone + "<br>" +
+        "昵称：" + (info.nickname || "-");
+      $("btnMe").style.display = "block";
+      $("btnLogout").style.display = "block";
+      $("meBox").style.display = "none";
+      fetchMyInfo();
+    }
+
+    async function fetchMyInfo() {
+      if (!getLoginInfo()?.accessToken) {
+        setMsg("请先登录", false);
+        return;
+      }
+      try {
+        const res = await apiGet("/user/me");
+        const me = res.result;
+        const box = $("meBox");
+        box.style.display = "block";
+        const avatarHtml = me.avatar
+          ? `<img class="avatar" src="${me.avatar}" alt="头像" />`
+          : "";
+        box.innerHTML =
+          avatarHtml +
+          "<b>我的信息</b><br>" +
+          "昵称：" + (me.nickname || "-") + "<br>" +
+          "头像：" + (me.avatar || "-");
+      } catch (err) {
+        setMsg(err.message, false);
+      }
+    }
+
+    async function logout() {
+      try {
+        await apiPost("/user/logout");
+      } catch (_) {}
+      localStorage.removeItem("LOGIN_INFO");
+      $("loginForm").style.display = "block";
+      $("userBox").style.display = "none";
+      $("meBox").style.display = "none";
+      $("btnMe").style.display = "none";
+      $("btnLogout").style.display = "none";
+      $("smsCode").value = "";
+      setMsg("已退出登录", true);
+    }
+
+    (function restore() {
+      const info = getLoginInfo();
+      if (info?.accessToken) {
+        showUser(info, $("phone").value.trim());
+      }
+    })();
+  </script>
+</body>
+</html>
